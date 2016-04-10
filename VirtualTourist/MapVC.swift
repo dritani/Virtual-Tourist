@@ -11,7 +11,7 @@ import UIKit
 import MapKit
 import CoreData
 
-class MapVC: UIViewController, MKMapViewDelegate {
+class MapVC: UIViewController, MKMapViewDelegate, NSFetchedResultsControllerDelegate{
     
     @IBOutlet weak var mapView: MKMapView!
     
@@ -25,6 +25,18 @@ class MapVC: UIViewController, MKMapViewDelegate {
     
     lazy var sharedContext: NSManagedObjectContext = {
         return CoreDataStackManager.sharedInstance().managedObjectContext
+    }()
+    
+    lazy var fetchedPinResultsController: NSFetchedResultsController = {
+        
+        let fetchRequest = NSFetchRequest(entityName: "Pin")
+        fetchRequest.sortDescriptors = []
+        
+        let fetchedPinResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: self.sharedContext,
+            sectionNameKeyPath: nil,cacheName: nil)
+        
+        return fetchedPinResultsController
+        
     }()
     
     // MARK: Application lifecycle
@@ -43,11 +55,49 @@ class MapVC: UIViewController, MKMapViewDelegate {
         restoreMapRegion(false)
         
 
-        // Pin Persistence
-        let pins = fetchAllPins()
-        for item in pins {
-            let pin = item as Pin
-            mapView.addAnnotation(pin)
+        //Pin Persistence
+//            let pins = self.fetchAllPins()
+//            for item in pins {
+//                let pin = item as Pin
+//                self.mapView.addAnnotation(pin)
+//            }
+        
+
+        do {
+            try fetchedPinResultsController.performFetch()
+        } catch {
+            print("Failed to load the saved pins.")
+        }
+        
+        fetchedPinResultsController.delegate = self
+        
+        let pins = fetchedPinResultsController.fetchedObjects
+        
+        if let array = pins as? [Pin] {
+            for item in array {
+                let pin = item as Pin
+                
+                mapView.addAnnotation(pin)
+            }
+        }
+    }
+
+    
+    func controller(controller: NSFetchedResultsController, didChangeObject anObject: AnyObject, atIndexPath indexPath: NSIndexPath?, forChangeType type: NSFetchedResultsChangeType, newIndexPath: NSIndexPath?) {
+        
+        switch type {
+            
+        case .Insert:
+            mapView.addAnnotation(anObject as! Pin)
+            break
+            
+        case .Delete:
+            mapView.removeAnnotation(anObject as! Pin)
+            break
+            
+        default:
+            // do nothing
+            return
         }
     }
     
@@ -125,19 +175,23 @@ class MapVC: UIViewController, MKMapViewDelegate {
         
         switch sender.state {
         case .Began:
-            newPin = Pin(latitude: coordinates.latitude, longitude: coordinates.longitude, context: sharedContext)
+            self.newPin = Pin(latitude: coordinates.latitude, longitude: coordinates.longitude, context: self.sharedContext)
+            self.newPin!.coordinate = coordinates
+            try! CoreDataStackManager.sharedInstance().saveContext()
+            self.mapView.addAnnotation(self.newPin!)
             break
         case .Changed:
-            newPin!.coordinate = coordinates
+            
             break
         case .Ended:
-            try! CoreDataStackManager.sharedInstance().saveContext()
+            
+
             break
         default:
             break
         }
         
-        mapView.addAnnotation(newPin!)
+        
     }
     
     func mapView(mapView: MKMapView!, annotationView view: MKAnnotationView!, didChangeDragState newState: MKAnnotationViewDragState, fromOldState oldState: MKAnnotationViewDragState) {
@@ -169,10 +223,13 @@ class MapVC: UIViewController, MKMapViewDelegate {
     }
 
     // Pin Next Screen
-    func mapView(mapView: MKMapView, didDeselectAnnotationView view: MKAnnotationView) {
+    func mapView(mapView: MKMapView, didSelectAnnotationView view: MKAnnotationView) {
         
         if delete {
             mapView.removeAnnotation(view.annotation!)
+            // delete object also
+            let pin = fetchOnePin(view.annotation!.coordinate)
+            sharedContext.deleteObject(pin!)
         } else {
             
             let pin = fetchOnePin(view.annotation!.coordinate)
@@ -184,21 +241,25 @@ class MapVC: UIViewController, MKMapViewDelegate {
         }
     }
     
+    
     private func fetchOnePin(coordinate: CLLocationCoordinate2D) -> Pin? {
         
         var pin: Pin? = nil
         let fetchRequest = NSFetchRequest(entityName: "Pin")
         fetchRequest.predicate = NSPredicate(format:"latitude == %lf and longitude == %lf", coordinate.latitude, coordinate.longitude)
-        do {
-            let results = try sharedContext.executeFetchRequest(fetchRequest) as? [Pin]
-            if let pins = results {
-                if pins.count > 0 {
-                    pin = pins[0] as Pin
+        
+            do {
+                let results = try self.sharedContext.executeFetchRequest(fetchRequest) as? [Pin]
+                if let pins = results {
+                    if pins.count > 0 {
+                        pin = pins[0] as Pin
+                    }
                 }
+            } catch {
+                pin = nil
             }
-        } catch {
-            pin = nil
-        }
+        
+
         return pin
     }
 }

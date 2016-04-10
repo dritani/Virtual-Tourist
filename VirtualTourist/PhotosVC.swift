@@ -31,33 +31,38 @@ class PhotosVC: UIViewController, UICollectionViewDataSource, UICollectionViewDe
         super.viewDidLoad()
         
         // Coordinate region
+        
         let span = MKCoordinateSpan(latitudeDelta: 0.3, longitudeDelta: 0.3)
-        let region = MKCoordinateRegion(center: pin.coordinate, span: span)
-        mapView.setRegion(region, animated: false)
-        mapView.addAnnotation(pin)
+        let region = MKCoordinateRegion(center: self.pin.coordinate, span: span)
+        self.mapView.setRegion(region, animated: false)
+        self.mapView.addAnnotation(self.pin)
+        
         
         activityIndicator.startAnimating()
 
         // if brand new pin, call FLickrAPI
-        if pin.totalPages == -1 {
-            FlickrAPI.sharedInstance().getFlickrInfo(pin.coordinate,page: Int(pin.pageNum),completionHandler: {(totalPages,urlArray) in
+        
+        if self.pin.totalPages == -1 {
+            FlickrAPI.sharedInstance().getFlickrInfo(self.pin.coordinate,page: Int(self.pin.pageNum),completionHandler: {(totalPages,urlArray) in
                 
-                self.pin.totalPages = totalPages
+                dispatch_async(dispatch_get_main_queue(), {
+                    self.pin.totalPages = totalPages
                 
-                if totalPages != 0 {
-                    for i in 0...urlArray.count-1 {
-                        dispatch_async(dispatch_get_main_queue(), {
-                            var newPhoto = Photo(content: ["A":urlArray[i]], context: self.sharedContext)
-                            newPhoto.pin = self.pin
-                        })
+                    if totalPages != 0 {
+                        for i in 0...urlArray.count-1 {
+                                var newPhoto = Photo(content: ["A":urlArray[i]], context: self.sharedContext)
+                                newPhoto.pin = self.pin
+                            
+                        }
                     }
-                }
-                try! CoreDataStackManager.sharedInstance().saveContext()
-                self.updateUI()
+                    try! CoreDataStackManager.sharedInstance().saveContext()
+                    self.updateUI()
+                })
             })
         } else {
-            updateUI()
+            self.updateUI()
         }
+        
     }
 
     
@@ -103,41 +108,43 @@ class PhotosVC: UIViewController, UICollectionViewDataSource, UICollectionViewDe
     
     
     func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        
-        return pin.photos.count
+        return self.pin.photos.count
     }
     
     func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell {
-    
-        let photo = pin.photos[indexPath.row] as! Photo
         
         let cell = collectionView.dequeueReusableCellWithReuseIdentifier("PhotoCellView", forIndexPath: indexPath) as! PhotoCell
         
-        if NSFileManager.defaultManager().fileExistsAtPath(String(photo.photoPath)) {
-            let data = NSData(contentsOfFile: String(photo.photoPath))
-            let image = UIImage(data: data!)
-            cell.photo.image = image
-        } else {
-            cell.activityIndicator.startAnimating()
-            cell.activityIndicator.hidden = false
-            FlickrAPI.sharedInstance().getFlickrPhoto(String(photo.photoURL!),completion:{(data) in
+        
+            let photo = self.pin.photos[indexPath.row] as! Photo
             
-                let path = "\(indexPath.row)"
-                let documentsDirectoryURL: NSURL = NSFileManager.defaultManager().URLsForDirectory(.DocumentDirectory, inDomains: .UserDomainMask).first!
-                let totalPath:String = documentsDirectoryURL.URLByAppendingPathComponent(path as String).path!
-                self.pin.photos[indexPath.row].photoPath = totalPath
-                
-                let image = UIImage(data: data)
-                let result = UIImageJPEGRepresentation(image!, 0.0)!
-                result.writeToFile(totalPath as String, atomically: true)
-                
-                dispatch_async(dispatch_get_main_queue(), {
-                    cell.photo.image = image
-                    cell.activityIndicator.stopAnimating()
-                    cell.activityIndicator.hidden = true
+            if NSFileManager.defaultManager().fileExistsAtPath(String(photo.photoPath)) {
+                let data = NSData(contentsOfFile: String(photo.photoPath))
+                let image = UIImage(data: data!)
+                cell.photo.image = image
+            } else {
+                cell.activityIndicator.startAnimating()
+                cell.activityIndicator.hidden = false
+                FlickrAPI.sharedInstance().getFlickrPhoto(String(photo.photoURL!),completion:{(data) in
+                    
+                    let path = "\(indexPath.row)"
+                    let documentsDirectoryURL: NSURL = NSFileManager.defaultManager().URLsForDirectory(.DocumentDirectory, inDomains: .UserDomainMask).first!
+                    let totalPath:String = documentsDirectoryURL.URLByAppendingPathComponent(path as String).path!
+                    self.pin.photos[indexPath.row].photoPath = totalPath
+                    
+                    let image = UIImage(data: data)
+                    let result = UIImageJPEGRepresentation(image!, 0.0)!
+                    result.writeToFile(totalPath as String, atomically: true)
+                    
+                    dispatch_async(dispatch_get_main_queue(), {
+                        cell.photo.image = image
+                        cell.activityIndicator.stopAnimating()
+                        cell.activityIndicator.hidden = true
+                    })
                 })
-            })
-        }
+            }
+
+
         return cell
     }
     
@@ -145,7 +152,11 @@ class PhotosVC: UIViewController, UICollectionViewDataSource, UICollectionViewDe
         let photo = pin.photos[indexPath.row] as! Photo
         sharedContext.deleteObject(photo)
         try! CoreDataStackManager.sharedInstance().saveContext()
-        try! NSFileManager.defaultManager().removeItemAtPath(String(photo.photoPath))
+        
+        let path = "\(indexPath.row)"
+        let documentsDirectoryURL: NSURL = NSFileManager.defaultManager().URLsForDirectory(.DocumentDirectory, inDomains: .UserDomainMask).first!
+        let totalPath:String = documentsDirectoryURL.URLByAppendingPathComponent(path as String).path!
+        try! NSFileManager.defaultManager().removeItemAtPath(totalPath)
         collectionView.reloadData()
     }
     
@@ -156,10 +167,15 @@ class PhotosVC: UIViewController, UICollectionViewDataSource, UICollectionViewDe
 
         let photosToDelete = pin.photos
         
+        var i:Int = 0
         for item in photosToDelete {
             let photo = item as! Photo
             sharedContext.deleteObject(photo)
-            try! NSFileManager.defaultManager().removeItemAtPath(String(photo.photoPath))
+            let path = "\(i)"
+            i = i + 1
+            let documentsDirectoryURL: NSURL = NSFileManager.defaultManager().URLsForDirectory(.DocumentDirectory, inDomains: .UserDomainMask).first!
+            let totalPath:String = documentsDirectoryURL.URLByAppendingPathComponent(path as String).path!
+            try! NSFileManager.defaultManager().removeItemAtPath(totalPath)
         }
             
         try! CoreDataStackManager.sharedInstance().saveContext()
@@ -169,6 +185,9 @@ class PhotosVC: UIViewController, UICollectionViewDataSource, UICollectionViewDe
         activityIndicator.startAnimating()
 
         FlickrAPI.sharedInstance().getFlickrInfo(pin.coordinate,page: Int(pin.pageNum),completionHandler: {(totalPages,urlArray) in
+
+            
+            dispatch_async(dispatch_get_main_queue(), {
                 
                 self.pin.totalPages = totalPages
                 
@@ -180,6 +199,7 @@ class PhotosVC: UIViewController, UICollectionViewDataSource, UICollectionViewDe
                 }
                 try! CoreDataStackManager.sharedInstance().saveContext()
                 self.updateUI()
+            })
             })
         } else {
             alert("No more images",viewController: self)
