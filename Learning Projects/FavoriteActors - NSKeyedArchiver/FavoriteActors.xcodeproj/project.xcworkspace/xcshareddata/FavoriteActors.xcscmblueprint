@@ -1,0 +1,30 @@
+{
+  "DVTSourceControlWorkspaceBlueprintPrimaryRemoteRepositoryKey" : "5E32233CC4B3D004BDE8903D03F6C0AFCAF27AFC",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyRepositoryLocationsKey" : {
+
+  },
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyStatesKey" : {
+    "BEEC795CE130BEB46EB21A58ABC678A915951772" : 0,
+    "5E32233CC4B3D004BDE8903D03F6C0AFCAF27AFC" : 0
+  },
+  "DVTSourceControlWorkspaceBlueprintIdentifierKey" : "7CF25C3C-9003-4820-9245-303F3E8AAEBC",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyPathsKey" : {
+    "BEEC795CE130BEB46EB21A58ABC678A915951772" : "..\/..",
+    "5E32233CC4B3D004BDE8903D03F6C0AFCAF27AFC" : "ios-persistence-2.0\/"
+  },
+  "DVTSourceControlWorkspaceBlueprintNameKey" : "FavoriteActors",
+  "DVTSourceControlWorkspaceBlueprintVersion" : 204,
+  "DVTSourceControlWorkspaceBlueprintRelativePathToProjectKey" : "FavoriteActors\/FavoriteActors.xcodeproj",
+  "DVTSourceControlWorkspaceBlueprintRemoteRepositoriesKey" : [
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/udacity\/ios-persistence-2.0",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "5E32233CC4B3D004BDE8903D03F6C0AFCAF27AFC"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/LithiumLover\/CodeEval.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "BEEC795CE130BEB46EB21A58ABC678A915951772"
+    }
+  ]
+}

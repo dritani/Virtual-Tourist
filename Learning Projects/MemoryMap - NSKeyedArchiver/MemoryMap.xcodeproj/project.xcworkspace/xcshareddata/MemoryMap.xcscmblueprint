@@ -1,0 +1,30 @@
+{
+  "DVTSourceControlWorkspaceBlueprintPrimaryRemoteRepositoryKey" : "B83259B3641D146EC8518EF1A8F299D9B566175F",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyRepositoryLocationsKey" : {
+
+  },
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyStatesKey" : {
+    "B83259B3641D146EC8518EF1A8F299D9B566175F" : 0,
+    "BEEC795CE130BEB46EB21A58ABC678A915951772" : 0
+  },
+  "DVTSourceControlWorkspaceBlueprintIdentifierKey" : "9FF460D7-957F-4EBA-955F-AC831AB82A8D",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyPathsKey" : {
+    "B83259B3641D146EC8518EF1A8F299D9B566175F" : "Virtual%20Tourist\/",
+    "BEEC795CE130BEB46EB21A58ABC678A915951772" : ".."
+  },
+  "DVTSourceControlWorkspaceBlueprintNameKey" : "MemoryMap",
+  "DVTSourceControlWorkspaceBlueprintVersion" : 204,
+  "DVTSourceControlWorkspaceBlueprintRelativePathToProjectKey" : "Learning Projects\/MemoryMap - NSKeyedArchiver\/MemoryMap.xcodeproj",
+  "DVTSourceControlWorkspaceBlueprintRemoteRepositoriesKey" : [
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/dritani\/Virtual-Tourist.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "B83259B3641D146EC8518EF1A8F299D9B566175F"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/LithiumLover\/CodeEval.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "BEEC795CE130BEB46EB21A58ABC678A915951772"
+    }
+  ]
+}
