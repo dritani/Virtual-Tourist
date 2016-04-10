@@ -45,11 +45,11 @@ class MapVC: UIViewController, MKMapViewDelegate, NSFetchedResultsControllerDele
         super.viewDidLoad()
         
         
-        // Edit/Done buttons
-        editButton = UIBarButtonItem(barButtonSystemItem: .Edit, target: self, action: "editPressed")
-        doneButton = UIBarButtonItem(barButtonSystemItem: .Done, target: self, action: "donePressed")
-        self.navigationItem.rightBarButtonItem = editButton
-        
+//        // Edit/Done buttons
+//        editButton = UIBarButtonItem(barButtonSystemItem: .Edit, target: self, action: "editPressed")
+//        doneButton = UIBarButtonItem(barButtonSystemItem: .Done, target: self, action: "donePressed")
+//        self.navigationItem.rightBarButtonItem = editButton
+//        
         // Map Region Persistence
         mapView.delegate = self
         restoreMapRegion(false)
@@ -175,10 +175,14 @@ class MapVC: UIViewController, MKMapViewDelegate, NSFetchedResultsControllerDele
         
         switch sender.state {
         case .Began:
-            self.newPin = Pin(latitude: coordinates.latitude, longitude: coordinates.longitude, context: self.sharedContext)
-            self.newPin!.coordinate = coordinates
-            try! CoreDataStackManager.sharedInstance().saveContext()
-            self.mapView.addAnnotation(self.newPin!)
+            
+            dispatch_async(dispatch_get_main_queue(), {
+                self.newPin = Pin(latitude: coordinates.latitude, longitude: coordinates.longitude, context: self.sharedContext)
+                self.newPin!.coordinate = coordinates
+                try! CoreDataStackManager.sharedInstance().saveContext()
+                self.mapView.addAnnotation(self.newPin!)
+            })
+
             break
         case .Changed:
             
@@ -224,12 +228,13 @@ class MapVC: UIViewController, MKMapViewDelegate, NSFetchedResultsControllerDele
 
     // Pin Next Screen
     func mapView(mapView: MKMapView, didSelectAnnotationView view: MKAnnotationView) {
-        
+        mapView.deselectAnnotation(view.annotation, animated: true)
         if delete {
-            mapView.removeAnnotation(view.annotation!)
-            // delete object also
-            let pin = fetchOnePin(view.annotation!.coordinate)
-            sharedContext.deleteObject(pin!)
+//            mapView.removeAnnotation(view.annotation!)
+//            // delete object also
+//            let pin = fetchOnePin(view.annotation!.coordinate)
+//            sharedContext.deleteObject(pin!)
+            
         } else {
             
             let pin = fetchOnePin(view.annotation!.coordinate)
@@ -258,6 +263,8 @@ class MapVC: UIViewController, MKMapViewDelegate, NSFetchedResultsControllerDele
             } catch {
                 pin = nil
             }
+        
+
         
 
         return pin

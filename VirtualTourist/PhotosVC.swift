@@ -127,11 +127,13 @@ class PhotosVC: UIViewController, UICollectionViewDataSource, UICollectionViewDe
                 cell.activityIndicator.hidden = false
                 FlickrAPI.sharedInstance().getFlickrPhoto(String(photo.photoURL!),completion:{(data) in
                     
-                    let path = "\(indexPath.row)"
+                    let path = "\(indexPath.row)-\(self.pin.coordinate.latitude)"
                     let documentsDirectoryURL: NSURL = NSFileManager.defaultManager().URLsForDirectory(.DocumentDirectory, inDomains: .UserDomainMask).first!
                     let totalPath:String = documentsDirectoryURL.URLByAppendingPathComponent(path as String).path!
-                    self.pin.photos[indexPath.row].photoPath = totalPath
                     
+                    dispatch_async(dispatch_get_main_queue(), {
+                        self.pin.photos[indexPath.row].photoPath = totalPath
+                    })
                     let image = UIImage(data: data)
                     let result = UIImageJPEGRepresentation(image!, 0.0)!
                     result.writeToFile(totalPath as String, atomically: true)
@@ -153,7 +155,7 @@ class PhotosVC: UIViewController, UICollectionViewDataSource, UICollectionViewDe
         sharedContext.deleteObject(photo)
         try! CoreDataStackManager.sharedInstance().saveContext()
         
-        let path = "\(indexPath.row)"
+        let path = "\(indexPath.row)-\(pin.coordinate.latitude)"
         let documentsDirectoryURL: NSURL = NSFileManager.defaultManager().URLsForDirectory(.DocumentDirectory, inDomains: .UserDomainMask).first!
         let totalPath:String = documentsDirectoryURL.URLByAppendingPathComponent(path as String).path!
         try! NSFileManager.defaultManager().removeItemAtPath(totalPath)
@@ -161,7 +163,6 @@ class PhotosVC: UIViewController, UICollectionViewDataSource, UICollectionViewDe
     }
     
     @IBAction func newCollectionActionClick(sender: UIBarButtonItem) {
-        print("wtf")
         if Int(pin.pageNum) + 1 <= Int(pin.totalPages) {
             pin.pageNum = Int(pin.pageNum) + 1
 
@@ -171,7 +172,7 @@ class PhotosVC: UIViewController, UICollectionViewDataSource, UICollectionViewDe
         for item in photosToDelete {
             let photo = item as! Photo
             sharedContext.deleteObject(photo)
-            let path = "\(i)"
+            let path = "\(i)-\(pin.coordinate.latitude)"
             i = i + 1
             let documentsDirectoryURL: NSURL = NSFileManager.defaultManager().URLsForDirectory(.DocumentDirectory, inDomains: .UserDomainMask).first!
             let totalPath:String = documentsDirectoryURL.URLByAppendingPathComponent(path as String).path!
@@ -200,7 +201,7 @@ class PhotosVC: UIViewController, UICollectionViewDataSource, UICollectionViewDe
                 try! CoreDataStackManager.sharedInstance().saveContext()
                 self.updateUI()
             })
-            })
+        })
         } else {
             alert("No more images",viewController: self)
         }
